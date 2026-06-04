@@ -1,13 +1,10 @@
 using System.Collections;
-
 public class LinkedList : IEnumerable<int>
 {
     private Node? _head;
     private Node? _tail;
-
-    /// <summary>
-    /// Insert a new node at the front (i.e. the head) of the linked list.
-    /// </summary>
+   
+    // This inserts a new node at the front (i.e. the head) of the linked list.
     public void InsertHead(int value)
     {
         // Create new node
@@ -21,27 +18,44 @@ public class LinkedList : IEnumerable<int>
         // If the list is not empty, then only head will be affected.
         else
         {
-            newNode.Next = _head; // Connect new node to the previous head
-            _head.Prev = newNode; // Connect the previous head to the new node
+            newNode.Next = _head; // This connects new node to the previous head
+            _head.Prev = newNode; // This connects the previous head to the new node
             _head = newNode; // Update the head to point to the new node
         }
     }
 
     /// <summary>
     /// Insert a new node at the back (i.e. the tail) of the linked list.
-    /// </summary>
+    /// Problem 1: Insert Tail
+    /// - Create a new node with the given value
+    /// - If the list is empty (_tail is null), set both head and tail to the new node
+    /// - If the list is not empty, connect the new node after the current tail and update tail
+    /// - Performance: O(1) - direct access to tail reference
+    /// <summary>
     public void InsertTail(int value)
     {
-        // TODO Problem 1
+        Node newNode = new(value);
+        // If the list is empty, then point both head and tail to the new node.
+        if (_tail is null)
+        {
+            _head = newNode;
+            _tail = newNode;
+        }
+        // If the list is not empty, then only tail will be affected.
+        else
+        {
+            newNode.Prev = _tail; // Connect new node to the previous tail
+            _tail.Next = newNode; // Connect the previous tail to the new node
+            _tail = newNode; // Update the tail to point to the new node
+        }
     }
-
 
     /// <summary>
     /// Remove the first node (i.e. the head) of the linked list.
-    /// </summary>
+    /// <summary>
     public void RemoveHead()
     {
-        // If the list has only one item in it, then set head and tail 
+        // If the list has only one item in it, then this set head and tail 
         // to null resulting in an empty list.  This condition will also
         // cover an empty list.  Its okay to set to null again.
         if (_head == _tail)
@@ -58,18 +72,35 @@ public class LinkedList : IEnumerable<int>
         }
     }
 
-
     /// <summary>
     /// Remove the last node (i.e. the tail) of the linked list.
-    /// </summary>
+    /// Problem 2: Remove Tail
+    /// - If the list has 0 or 1 items (_head == _tail), this set both head and tail to null
+    /// - If the list has more than one item, disconnect the last node and update tail
+    ///   to point to the second-to-last node
+    /// - Performance: O(1) - direct access to tail reference
+    /// <summary>
     public void RemoveTail()
     {
-        // TODO Problem 2
+        // If the list has only one item in it, then set head and tail 
+        // to null resulting in an empty list.  This condition will also
+        // cover an empty list.  Its okay to set to null again.
+        if (_head == _tail)
+        {
+            _head = null;
+            _tail = null;
+        }
+        // If the list has more than one item in it, then only the tail
+        // will be affected.
+        else if (_tail is not null)
+        {
+            _tail.Prev!.Next = null; // Disconnect the second-to-last node from the last node
+            _tail = _tail.Prev; // Update the tail to point to the second-to-last node
+        }
     }
-
     /// <summary>
     /// Insert 'newValue' after the first occurrence of 'value' in the linked list.
-    /// </summary>
+    /// <summary>
     public void InsertAfter(int value, int newValue)
     {
         // Search for the node that matches 'value' by starting at the 
@@ -102,35 +133,76 @@ public class LinkedList : IEnumerable<int>
             curr = curr.Next; // Go to the next node to search for 'value'
         }
     }
-
     /// <summary>
     /// Remove the first node that contains 'value'.
+    /// Problem 3: Remove First Occurrence
+    /// - Search from head for the first node containing the given value
+    /// - If the node is the head, reuse RemoveHead()
+    /// - If the node is the tail, reuse RemoveTail()
+    /// - If the node is in the middle, bypass it by connecting its Prev and Next nodes
+    /// - Exit immediately after removing the first match
+    /// - Performance: O(n) worst case - may need to search entire list
     /// </summary>
     public void Remove(int value)
     {
-        // TODO Problem 3
+        Node? curr = _head;
+        while (curr is not null)
+        {
+            if (curr.Data == value)
+            {
+                // If the node to remove is the head
+                if (curr == _head)
+                {
+                    RemoveHead();
+                }
+                // If the node to remove is the tail
+                else if (curr == _tail)
+                {
+                    RemoveTail();
+                }
+                // If the node is in the middle
+                else
+                {
+                    curr.Prev!.Next = curr.Next; // Connect previous node to next node
+                    curr.Next!.Prev = curr.Prev; // Connect next node to previous node
+                }
+                return; // Exit after removing the first match
+            }
+            curr = curr.Next;
+        }
     }
-
     /// <summary>
     /// Search for all instances of 'oldValue' and replace the value to 'newValue'.
-    /// </summary>
+    
+    /// Problem 4: Replace All Occurrences
+    /// - Traverse the entire list from head to tail
+    /// - For each node, if its data equals oldValue, update it to newValue
+    /// - Unlike Remove, continue searching through the entire list to replace all matches
+    /// - Performance: O(n) - must visit every node in the list
+    /// <summary>
     public void Replace(int oldValue, int newValue)
     {
-        // TODO Problem 4
+        Node? curr = _head;
+        while (curr is not null)
+        {
+            if (curr.Data == oldValue)
+            {
+                curr.Data = newValue; // Replace the value in place
+            }
+            curr = curr.Next; // Continue searching through the entire list
+        }
     }
-
     /// <summary>
     /// Yields all values in the linked list
-    /// </summary>
+    /// <summary>
     IEnumerator IEnumerable.GetEnumerator()
     {
         // call the generic version of the method
         return this.GetEnumerator();
     }
-
     /// <summary>
     /// Iterate forward through the Linked List
-    /// </summary>
+    /// <summary>
     public IEnumerator<int> GetEnumerator()
     {
         var curr = _head; // Start at the beginning since this is a forward iteration.
@@ -140,14 +212,24 @@ public class LinkedList : IEnumerable<int>
             curr = curr.Next; // Go forward in the linked list
         }
     }
-
     /// <summary>
     /// Iterate backward through the Linked List
+    
+    /// Problem 5: Reverse Iterator
+    /// - Start at the tail instead of the head
+    /// - Use yield return to lazily provide each value going backward
+    /// - Move through the list using Prev references instead of Next
+    /// - Pattern matches the GetEnumerator function but in reverse direction
+    /// - Performance: O(n) to iterate through all elements
     /// </summary>
     public IEnumerable Reverse()
     {
-        // TODO Problem 5
-        yield return 0; // replace this line with the correct yield return statement(s)
+        var curr = _tail; // Start at the end since this is a backward iteration.
+        while (curr is not null)
+        {
+            yield return curr.Data; // Provide (yield) each item to the user
+            curr = curr.Prev; // Go backward in the linked list
+        }
     }
 
     public override string ToString()
